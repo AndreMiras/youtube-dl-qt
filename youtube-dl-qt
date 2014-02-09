@@ -7,9 +7,35 @@ from ui.main_window import Ui_MainWindow
 from youtube_dl import YoutubeDL
 
 
-def progress_hook(pr):
-    print(pr)
 
+class QYoutubeDL(QtCore.QThread):
+
+    progressChanged = QtCore.pyqtSignal(dict)
+
+    def __init__(self, parent=None, ydl=None):
+        QtCore.QThread.__init__(self, parent)
+        self.urls = []
+        self.ydl = ydl
+        self.ydl.add_progress_hook(self.progress_hook)
+
+    def progress_hook(self, pr):
+        """
+        * filename: The final filename
+        * status: One of "downloading" and "finished"
+
+        It can also have some of the following entries:
+
+        * downloaded_bytes: Bytes on disks
+        * total_bytes: Total bytes, None if unknown
+        * tmpfilename: The filename we're currently writing to
+        * eta: The estimated time in seconds, None if unknown
+        * speed: The download speed in bytes/second, None if unknown
+        """
+        print "emit progress"
+        self.progressChanged.emit(pr)
+
+    def run(self):
+        self.ydl.download(self.urls)
 
 class StartQT4(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -34,6 +60,15 @@ class StartQT4(QtGui.QMainWindow):
     def on_downloadPushButton_clicked(self):
         self.start_download()
 
+    def onProgressChanged(self, pr):
+        print "pr:", pr
+        downloaded_bytes = pr['downloaded_bytes']
+        total_bytes = pr['total_bytes']
+        percentage = 50
+        if total_bytes:
+            percentage = 100 * downloaded_bytes / total_bytes
+        self.ui.progressBar.setValue(percentage)
+
     def start_download(self):
         directory = str(self.ui.outputDirLineEdit.text())
         if directory:
@@ -43,9 +78,13 @@ class StartQT4(QtGui.QMainWindow):
         }
         url = str(self.ui.urlLineEdit.text())
         with YoutubeDL(ydl_options) as ydl:
+            qydl = QYoutubeDL(ydl=ydl)
             ydl.add_default_info_extractors()
-            ydl.add_progress_hook(progress_hook)
-            ydl.download([url])
+            # ydl.add_progress_hook(progress_hook)
+            # ydl.download([url])
+            qydl.urls = [url]
+            qydl.progressChanged.connect(self.onProgressChanged)
+            qydl.start()
 
     def selectFile(self):
         self.ui.outputDirLineEdit.setText(QtGui.QFileDialog.getExistingDirectory())
