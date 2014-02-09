@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from PyQt4 import QtCore, QtGui
+from ui.main_window import Ui_MainWindow
+from youtube_dl import YoutubeDL
+
+
+def progress_hook(pr):
+    print(pr)
+
+
+class StartQT4(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.custom_setup_ui()
+        self.connect_signals()
+
+    def connect_signals(self):
+        """
+        Connects signals that are not implicitly defined.
+        """
+        self.ui.browsePushButton.clicked.connect(self.selectFile)
+
+    def custom_setup_ui(self):
+        current_dir_abspath = os.path.abspath('')
+        self.ui.outputDirLineEdit.setText(current_dir_abspath)
+
+    # http://stackoverflow.com/questions/14311578/event-signal-is-emmitted-twice-every-time
+    @QtCore.pyqtSlot()
+    def on_downloadPushButton_clicked(self):
+        self.start_download()
+
+    def start_download(self):
+        directory = str(self.ui.outputDirLineEdit.text())
+        if directory:
+            directory = os.path.abspath(directory) + '/'
+        ydl_options = {
+            'outtmpl': directory + u'%(title)s-%(id)s.%(ext)s',
+        }
+        url = str(self.ui.urlLineEdit.text())
+        with YoutubeDL(ydl_options) as ydl:
+            ydl.add_default_info_extractors()
+            ydl.add_progress_hook(progress_hook)
+            ydl.download([url])
+
+    def selectFile(self):
+        self.ui.outputDirLineEdit.setText(QtGui.QFileDialog.getExistingDirectory())
+
+
+if __name__ == "__main__":
+    app = QtGui.QApplication(sys.argv)
+    myapp = StartQT4()
+    myapp.show()
+    sys.exit(app.exec_())
