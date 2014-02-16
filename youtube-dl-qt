@@ -57,7 +57,7 @@ class DownloadItem(QtGui.QWidget):
         self.ui.progressBar.setValue(percentage)
 
 
-class StartQT4(QtGui.QMainWindow):
+class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.ui = Ui_MainWindow()
@@ -72,8 +72,33 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.browsePushButton.clicked.connect(self.selectFile)
 
     def custom_setup_ui(self):
+        self.readSettings()
+
+    def writeSettings(self):
+        """
+        Saves the user preferred output directory value.
+        """
+        settings = QtCore.QSettings()
+        output_directory = self.ui.outputDirLineEdit.text()
+        settings.setValue("output_directory", output_directory)
+
+    def readSettings(self):
+        """
+        Restores the last output directory value.
+        """
+        settings = QtCore.QSettings()
+        # defaults to the current directory path
         current_dir_abspath = os.path.abspath('')
-        self.ui.outputDirLineEdit.setText(current_dir_abspath)
+        defaultValue = QtCore.QString(current_dir_abspath)
+        # Warning:
+        # QSettings.value can return different types (QVariant types) depending on the platform it's running on,
+        # so the safest way to use it is always casting the result to the desired type, e.g.: int(settings.value("myKey")).
+        output_directory = settings.value("output_directory", defaultValue=defaultValue).toString()
+        self.ui.outputDirLineEdit.setText(output_directory)
+
+    def closeEvent(self, event):
+        self.writeSettings()
+        event.accept()
 
     # http://stackoverflow.com/questions/14311578/event-signal-is-emmitted-twice-every-time
     @QtCore.pyqtSlot()
@@ -120,7 +145,9 @@ class StartQT4(QtGui.QMainWindow):
 
 
 if __name__ == "__main__":
+    QtCore.QCoreApplication.setOrganizationName("youtube-dl-qt")
+    QtCore.QCoreApplication.setApplicationName("youtube-dl-qt")
     app = QtGui.QApplication(sys.argv)
-    myapp = StartQT4()
+    myapp = MainWindow()
     myapp.show()
     sys.exit(app.exec_())
