@@ -117,7 +117,8 @@ class MainWindow(QtGui.QMainWindow):
         item = QtGui.QListWidgetItem()
         self.ui.downloadListWidget.addItem(item)
         self.ui.downloadListWidget.setItemWidget(item, download_item)
-        item.setSizeHint(self.ui.downloadListWidget.sizeHint())
+        item.setSizeHint(
+            QtCore.QSize(self.ui.downloadListWidget.sizeHint().width(), 80))
         return (item, download_item)
 
 
