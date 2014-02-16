@@ -4,12 +4,16 @@ import os
 import sys
 from PyQt4 import QtCore, QtGui
 from ui.main_window import Ui_MainWindow
+from ui.download_item import Ui_DownloadItem
 from youtube_dl import YoutubeDL
 
 
 
 class QYoutubeDL(QtCore.QThread):
-
+    """
+    Wraps YoutubeDL in a QThread.
+    Emits progressChanged signal on progress_hook calls.
+    """
     progressChanged = QtCore.pyqtSignal(dict)
 
     def __init__(self, parent=None, ydl=None):
@@ -31,11 +35,27 @@ class QYoutubeDL(QtCore.QThread):
         * eta: The estimated time in seconds, None if unknown
         * speed: The download speed in bytes/second, None if unknown
         """
-        print "emit progress"
         self.progressChanged.emit(pr)
 
     def run(self):
         self.ydl.download(self.urls)
+
+
+class DownloadItem(QtGui.QWidget):
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+        self.ui = Ui_DownloadItem()
+        self.ui.setupUi(self)
+
+    def onProgressChanged(self, pr):
+        print "pr:", pr
+        downloaded_bytes = pr['downloaded_bytes']
+        total_bytes = pr['total_bytes']
+        percentage = 50
+        if total_bytes:
+            percentage = 100 * downloaded_bytes / total_bytes
+        self.ui.progressBar.setValue(percentage)
+
 
 class StartQT4(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -58,32 +78,41 @@ class StartQT4(QtGui.QMainWindow):
     # http://stackoverflow.com/questions/14311578/event-signal-is-emmitted-twice-every-time
     @QtCore.pyqtSlot()
     def on_downloadPushButton_clicked(self):
-        self.start_download()
-
-    def onProgressChanged(self, pr):
-        print "pr:", pr
-        downloaded_bytes = pr['downloaded_bytes']
-        total_bytes = pr['total_bytes']
-        percentage = 50
-        if total_bytes:
-            percentage = 100 * downloaded_bytes / total_bytes
-        self.ui.progressBar.setValue(percentage)
-
-    def start_download(self):
+        url = str(self.ui.urlLineEdit.text())
         directory = str(self.ui.outputDirLineEdit.text())
+        item, download_item = self.add_download_item(url)
+        self.start_download(url, directory, download_item.onProgressChanged)
+
+    def add_download_item(self, url):
+        """
+        Adds custom progress bar widget to the downloadListWidget.
+        """
+        download_item = DownloadItem()
+        download_item.ui.urlLabel.setText(url)
+        item = QtGui.QListWidgetItem()
+        self.ui.downloadListWidget.addItem(item)
+        self.ui.downloadListWidget.setItemWidget(item, download_item)
+        item.setSizeHint(self.ui.downloadListWidget.sizeHint())
+        return (item, download_item)
+
+
+    def start_download(self, url, directory, onProgressChanged):
+        """
+        Starts the QYoutubeDL thread and hooks progress bar.
+        """
         if directory:
             directory = os.path.abspath(directory) + '/'
         ydl_options = {
             'outtmpl': directory + u'%(title)s-%(id)s.%(ext)s',
         }
-        url = str(self.ui.urlLineEdit.text())
         with YoutubeDL(ydl_options) as ydl:
             qydl = QYoutubeDL(ydl=ydl)
             ydl.add_default_info_extractors()
             # ydl.add_progress_hook(progress_hook)
             # ydl.download([url])
+            # TODO: keep the qydl instance until the thread finishes
             qydl.urls = [url]
-            qydl.progressChanged.connect(self.onProgressChanged)
+            qydl.progressChanged.connect(onProgressChanged)
             qydl.start()
 
     def selectFile(self):

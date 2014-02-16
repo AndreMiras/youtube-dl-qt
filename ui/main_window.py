@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/main_window.ui'
 #
-# Created: Mon Feb 10 00:09:27 2014
+# Created: Sun Feb 16 20:06:28 2014
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -33,20 +33,25 @@ class Ui_MainWindow(object):
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.urlLineEdit = QtGui.QLineEdit(self.centralwidget)
         self.urlLineEdit.setObjectName(_fromUtf8("urlLineEdit"))
-        self.gridLayout.addWidget(self.urlLineEdit, 0, 0, 1, 1)
-        self.outputDirLineEdit = QtGui.QLineEdit(self.centralwidget)
-        self.outputDirLineEdit.setObjectName(_fromUtf8("outputDirLineEdit"))
-        self.gridLayout.addWidget(self.outputDirLineEdit, 2, 0, 1, 1)
+        self.gridLayout.addWidget(self.urlLineEdit, 0, 1, 1, 1)
         self.downloadPushButton = QtGui.QPushButton(self.centralwidget)
         self.downloadPushButton.setObjectName(_fromUtf8("downloadPushButton"))
-        self.gridLayout.addWidget(self.downloadPushButton, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.downloadPushButton, 0, 2, 1, 1)
+        self.outputDirLineEdit = QtGui.QLineEdit(self.centralwidget)
+        self.outputDirLineEdit.setObjectName(_fromUtf8("outputDirLineEdit"))
+        self.gridLayout.addWidget(self.outputDirLineEdit, 3, 1, 1, 1)
         self.browsePushButton = QtGui.QPushButton(self.centralwidget)
         self.browsePushButton.setObjectName(_fromUtf8("browsePushButton"))
-        self.gridLayout.addWidget(self.browsePushButton, 2, 1, 1, 1)
-        self.progressBar = QtGui.QProgressBar(self.centralwidget)
-        self.progressBar.setProperty("value", 24)
-        self.progressBar.setObjectName(_fromUtf8("progressBar"))
-        self.gridLayout.addWidget(self.progressBar, 3, 0, 1, 1)
+        self.gridLayout.addWidget(self.browsePushButton, 3, 2, 1, 1)
+        self.label = QtGui.QLabel(self.centralwidget)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.downloadListWidget = QtGui.QListWidget(self.centralwidget)
+        self.downloadListWidget.setObjectName(_fromUtf8("downloadListWidget"))
+        self.gridLayout.addWidget(self.downloadListWidget, 1, 0, 1, 3)
+        self.label_2 = QtGui.QLabel(self.centralwidget)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.gridLayout.addWidget(self.label_2, 3, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 20))
@@ -63,7 +68,9 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
         self.urlLineEdit.setText(_translate("MainWindow", "http://www.youtube.com/watch?v=BaW_jenozKc", None))
         self.urlLineEdit.setPlaceholderText(_translate("MainWindow", "Youtube video URL", None))
-        self.outputDirLineEdit.setPlaceholderText(_translate("MainWindow", "Output directory", None))
         self.downloadPushButton.setText(_translate("MainWindow", "Download", None))
+        self.outputDirLineEdit.setPlaceholderText(_translate("MainWindow", "Output directory", None))
         self.browsePushButton.setText(_translate("MainWindow", "Browse", None))
+        self.label.setText(_translate("MainWindow", "URL:", None))
+        self.label_2.setText(_translate("MainWindow", "Save to:", None))
 
